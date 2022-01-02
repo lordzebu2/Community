@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+  <mapper namespace="com.js.mybatis">
+  
+  	<!-- 전체글 게시판 -->
+  	<select id="allboardlist" resultType="com.jjs.cat.dto.Dto_allboard">
+  		select * from cafe_allboard order by allidx desc LIMIT #{all_numTmp}, #{pageSize}
+  	</select>
+  	
+  	<select id="allboardcnt" resultType="Integer">
+  		select count(allidx) from cafe_allboard
+  	</select>
+  	
+  	<select id="allmembercnt" resultType="Integer">
+  		select count(idx) from cafe_member
+  	</select>
+  	
+  	<select id="comment_cnt" resultType="Integer">
+  		select count(idx_c) from board_comment WHERE idx_c = #{idx};
+  	</select>
+  	
+  	<update id="allhita">
+  		UPDATE cafe_allboard t1 JOIN cafe_qaboard t2
+		ON (t1.allidx = t2.allidx) SET t1.hit = t1.hit + 1, t2.hit = t2.hit + 1
+		WHERE t1.allidx = #{idx};
+  	</update>
+  	
+  	<update id="allhitb">
+  		UPDATE cafe_allboard t1 JOIN cafe_freeboard t2
+		ON (t1.allidx = t2.allidx) SET t1.hit = t1.hit + 1, t2.hit = t2.hit + 1
+		WHERE t1.allidx = #{idx};
+  	</update>
+  	
+  	<select id="allcontents" resultType="com.jjs.cat.dto.Dto_allboard">
+  		SELECT *, DATE_FORMAT(stime, '%H:%i') AS tt FROM cafe_allboard WHERE allidx = #{idx}
+  	</select>
+  	
+  	<delete id="board_delete">
+  		DELETE FROM cafe_allboard WHERE allidx = #{allidx};
+  	</delete>
+  	
+  	<select id="member" resultType="com.jjs.cat.dto.Dto_member">
+  		select * from cafe_member order by idx asc LIMIT #{m_numTmp}, #{pageSize_m}
+  	</select>
+  	
+  	<select id="black" resultType="com.jjs.cat.dto.Dto_blacklist">
+  		select * from blacklist;
+  	</select>
+  	
+  	<select id="black_String" resultType="String">
+  		select id from blacklist;
+  	</select>
+  	
+  	<!-- 자유게시판 -->
+  	
+  	<select id="freeboardcnt" resultType="Integer">
+  		select count(idx) from cafe_freeboard
+  	</select>
+  	
+  	<select id="freeboardlist" resultType="com.jjs.cat.dto.Dto_freeboard">
+  		select * from cafe_freeboard order by idx desc LIMIT #{free_numTmp}, #{pageSize}
+  	</select>
+  	
+  	<insert id="write_freeinput_all">
+  		INSERT INTO cafe_allboard VALUES (NULL, '자유게시판', #{title}, #{nickname}, CURDATE(), CURTIME(), DEFAULT, #{contents}, #{file}, DEFAULT);
+  	</insert>
+  	
+  	<insert id="write_input_free">
+  		INSERT INTO cafe_freeboard (allidx, title, nickname, rdate, stime, contents, img)
+  		SELECT allidx, title, nickname, rdate, stime, contents, img FROM cafe_allboard ORDER BY allidx DESC LIMIT 1;
+  	</insert>
+  	
+  	<!-- 질문과답변 -->
+  	
+  	<select id="qaboardcnt" resultType="Integer">
+  		select count(idx) from cafe_qaboard
+  	</select>
+  	
+  	<select id="qaboardlist" resultType="com.jjs.cat.dto.Dto_qaboard">
+  		select * from cafe_qaboard order by idx desc LIMIT #{qa_numTmp}, #{pageSize}
+  	</select>
+  	
+  	<insert id="write_qainput_all">
+  		INSERT INTO cafe_allboard VALUES (NULL, '질문and답변', #{title}, #{nickname}, CURDATE(), CURTIME(), DEFAULT, #{contents}, #{file}, DEFAULT);
+  	</insert>
+
+  	<insert id="write_input_qa">
+  		INSERT INTO cafe_qaboard (allidx, title, nickname, rdate, stime, contents, img) 
+  		SELECT allidx, title, nickname, rdate, stime, contents, img FROM cafe_allboard ORDER BY allidx DESC LIMIT 1;
+  	</insert>
+  	
+  	
+  	
+  	
+  	<update id="update_input">
+  		UPDATE cafe_allboard SET title=#{title}, board_title=#{board}, contents=#{contents}, img=#{file} WHERE allidx = #{allidx};
+  	</update>
+  	
+  	<update id="member_update">
+  		UPDATE cafe_member SET NAME=#{name}, id=#{id}, nickname=#{nickname}, idnum=#{idnum}, pnum=#{pnum}, email=#{email} WHERE idx = #{idx};
+  	</update>
+  	
+  	<insert id="insertData">
+  		insert into cafe_member values (null, #{name}, #{id}, #{nickname}, #{pw}, #{idnum}, #{pnum}, #{email})
+  	</insert>
+
+  	<select id="comment" resultType="com.jjs.cat.dto.Dto_comment">
+  		SELECT *, DATE_FORMAT(stime_c, '%H:%i') AS stime_cc FROM board_comment WHERE idx_c = #{idx_c}
+  	</select>
+  	
+  	<select id="member_ssesion" resultType="com.jjs.cat.dto.Dto_member">
+  		select * from cafe_member where id= #{id} and pw= #{pw}
+  	</select>
+  	
+  	<insert id="comment_input">
+  		INSERT INTO board_comment VALUES (#{idx_c}, #{nickname}, CURDATE(), CURTIME(), #{contents_c});
+  	</insert>
+  	
+  	<select id="ajax_id" resultType="Integer">
+  		select count(*) from cafe_member where id=#{id};
+  	</select>
+  	
+  	<select id="ajax_nickname" resultType="Integer">
+  		select count(*) from cafe_member where nickname=#{nickname};
+  	</select>
+  	
+  	<select id="findid_proc" resultType="String">
+  		SELECT id FROM cafe_member WHERE NAME = #{name} AND email = #{email};
+  	</select>
+  	
+  	<select id="findpw_proc" resultType="String">
+  		SELECT pw FROM cafe_member WHERE id = #{id} AND pnum = #{pnum};
+  	</select>
+  	
+  	<delete id="member_delete">
+  		DELETE FROM cafe_member WHERE idx=#{idx}
+  	</delete>
+  	
+  	<insert id="member_black_input">
+  		INSERT INTO blacklist VALUES (NULL, #{nickname}, #{id});
+  	</insert>
+  	
+  	<delete id="member_black_delete">
+  		DELETE FROM blacklist WHERE nickname=#{nickname}
+  	</delete>
+  	
+  </mapper>
